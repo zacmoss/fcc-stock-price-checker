@@ -37,7 +37,7 @@ module.exports = function (app) {
       }
       let storedData = {
         stock: '',
-        ip: 'test ip',
+        ips: ['test ip'],
         likes: 0
       };
       
@@ -57,28 +57,36 @@ module.exports = function (app) {
           //res.send(json.data.quote);
           //console.log(json.data.quote);
           
-          storedData.ip = req.headers['x-forwarded-for'];
+          let ip = req.headers['x-forwarded-for'];
+          storedData.ips.push(ip);
           
           MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
             let dbo = db.db("fcc-cert6-project4");
             let collection = dbo.collection('stocks');
             collection.findOne({stock: firstStock}, function(err, doc) {
               if (doc) {
-                // and if like query === true then add ip and increment likes to stock in db
+                // and if like query === true and ip not already in ips on stock in db 
+                // then add ip and increment likes to stock in db
+                
                 // add doc returned to stockDataArray
               } else {
+                
                 // create stock in stock db
                 storedData.stock = firstStock;
                 if (like === true) storedData.likes = 1;
-                // add doc returned to stockDataArray
                 
-                //storedData.ip = "a new ip";
+                // add doc returned to stockDataArray
                 collection.insertOne(storedData, function(err, doc) {
-                  console.log('data sent');
-                  console.log(doc);
+                  
+                  collection.findOne({stock: firstStock}, function(err, doc) {
+                    //res.send(doc);
+                  });
+                  
+                  //stockDataArray.push(doc);
+                  //console.log(doc);
                 });
               }
-              
+              /*
               collection.findOne({stock: secondStock}, function(err, doc) {
                 if (doc) {
                   // and if like query === true then add ip and increment likes to stock in db
@@ -89,10 +97,10 @@ module.exports = function (app) {
                 }
                 
               });
-              
+              */
             });
             
-            // res.send stockDataArray
+            res.send(stockDataArray);
             
             
           });
