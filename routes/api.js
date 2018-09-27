@@ -36,12 +36,12 @@ module.exports = function (app) {
         }
       }
       let storedData = {
-        ticker: '',
-        price: '',
+        ip: 'test ip',
         likes: 0
       };
       
-      let stockData = {};
+      let stockData = {}; // if there is only one stock
+      let stockDataArray = []; // if there are two stocks compared
       console.log(like);
       // companyName   symbol
     
@@ -60,11 +60,31 @@ module.exports = function (app) {
             collection.findOne({stock: firstStock}, function(err, doc) {
               if (doc) {
                 // and if like query === true then add ip and increment likes to stock in db
+                // add doc returned to stockDataArray
               } else {
                 // create stock in stock db
+                // add doc returned to stockDataArray
+                collection.insertOne(storedData, function(err, doc) {
+                  console.log('data sent');
+                  console.log(doc);
+                });
               }
               
-            })
+              collection.findOne({stock: secondStock}, function(err, doc) {
+                if (doc) {
+                  // and if like query === true then add ip and increment likes to stock in db
+                  // add doc returned to stockDataArray
+                } else {
+                  // create stock in stock db
+                  // add doc returned to stockDataArray
+                }
+                
+              });
+              
+            });
+            
+            // res.send stockDataArray
+            
             
           });
             
