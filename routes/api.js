@@ -30,7 +30,6 @@ module.exports = function (app) {
         firstStock = req.query.stock;
       }
       
-      console.log(firstStock + secondStock);
       if (req.query.like) {
         if (req.query.like == 'true') {
           like = true;
@@ -44,16 +43,35 @@ module.exports = function (app) {
       
       let stockData = {};
       console.log(like);
-    // companyName   symbol 
-    if (secondStock) {
-      console.log(secondStock);
-    }
-    axios.get('https://api.iextrading.com/1.0/stock/aapl/batch?types=quote,news,chart&range=1m&last=1').then(json => {
-      res.send(json.data.quote);
-      console.log(json);
-    }).catch(error => {
-      console.log(error);
-    });
+      // companyName   symbol
+    
+      if (secondStock) {
+        console.log('there is a second stock');
+        axios.get('https://api.iextrading.com/1.0/stock/aapl/batch?types=quote,news,chart&range=1m&last=1').then(json => {
+          // if like = true find stock in db if stock doesn't exist create it
+          // increment that db items likes if like is true
+          // next get that sent data from db and save to stockData
+          // last show stockData in res.send
+          //res.send(json.data.quote);
+          //console.log(json);
+          
+        }).catch(error => {
+          console.log(error);
+        });
+      } else {
+        console.log('there is only one stock');
+        axios.get('https://api.iextrading.com/1.0/stock/aapl/batch?types=quote,news,chart&range=1m&last=1').then(json => {
+          // first get storedData and send to db
+          // next get that sent data from db and save to stockData
+          // last show stockData
+          res.send(json.data.quote);
+          console.log(json);
+        }).catch(error => {
+          console.log(error);
+        });
+      }
+    
+      
     });
     
 };
