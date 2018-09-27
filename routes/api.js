@@ -58,6 +58,8 @@ module.exports = function (app) {
           //console.log(json.data.quote);
           
           let ip = req.headers['x-forwarded-for'];
+          let ipArray = ip.split(',');
+          ip = ipArray[0];
           storedData.ips.push(ip);
           
           MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
@@ -115,14 +117,15 @@ module.exports = function (app) {
         });
       } else {
         console.log('there is only one stock');
-        axios.get('https://api.iextrading.com/1.0/stock/aapl/batch?types=quote,news,chart&range=1m&last=1').then(json => {
+        axios.get('https://api.iextrading.com/1.0/stock/' + firstStock + '/batch?types=quote,news,chart&range=1m&last=1').then(json => {
           // first get storedData and send to db
           // next get that sent data from db and save to stockData
           // last show stockData
           
-          
+          console.log(json.data.quote.latestPrice);
           let ip = req.headers['x-forwarded-for'];
-          let ipAr
+          let ipArray = ip.split(',');
+          ip = ipArray[0];
           storedData.ips.push(ip);
           
           MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
@@ -142,23 +145,35 @@ module.exports = function (app) {
                         { $inc: { likes: 1 } },
                         function(err, doc) {
                           collection.findOne({stock: firstStock}, function(err, doc) {
-                            stockData = doc;
+                            stockData = {
+                              stock: doc.stock,
+                              price: 0,
+                              likes: doc.likes
+                            };
                             res.send(stockData);
                           });
                       });
                     
                     } else { // ip is already in stock array for likes
                       collection.findOne({stock: firstStock}, function(err, doc) {
-                        stockData = doc;
+                        stockData = {
+                          stock: doc.stock,
+                          price: 0,
+                          likes: doc.likes
+                        };
                         res.send(stockData);
                       });
                     }
                     
                   });
                   
-                } else { // no like in query
+                } else { // no like in query but stock exists in db
                   collection.findOne({stock: firstStock}, function(err, doc) {
-                    stockData = doc;
+                    stockData = {
+                      stock: doc.stock,
+                      price: 0,
+                      likes: doc.likes
+                    };
                     res.send(stockData);
                   });
                 }
@@ -172,7 +187,11 @@ module.exports = function (app) {
                 collection.insertOne(storedData, function(err, doc) {
                   
                   collection.findOne({stock: firstStock}, function(err, doc) {
-                    stockData = doc;
+                    stockData = {
+                      stock: doc.stock,
+                      price: 0,
+                      likes: doc.likes
+                    };
                     res.send(stockData);
                   });
                   
