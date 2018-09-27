@@ -25,11 +25,18 @@ module.exports = function (app) {
         console.log(res);
       });
       */
-    axios.get('https://finance.google.com/finance/info?q=NASDAQ%3a' + stock).then(json => {
+    // + '&output=json'
+    /*
+    axios.get(' https://finance.google.com/finance?q=NASDAQ:' + stock).then(json => {
+      res.send(json.data);
       console.log(json);
     }).catch(error => {
       console.log(error);
     });
+    */
+    axios.get('https://api.iextrading.com/1.0').then(json => {
+      console.log(json);
+    }).catch(error => 
     });
     
 };
