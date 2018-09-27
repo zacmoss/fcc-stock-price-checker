@@ -9,7 +9,7 @@
 'use strict';
 
 var expect = require('chai').expect;
-var MongoClient = require('mongodb');
+var MongoClient = require('mongodb').MongoClient;
 const axios = require('axios');
 
 const CONNECTION_STRING = process.env.DB; //MongoClient.connect(CONNECTION_STRING, function(err, db) {});
@@ -54,7 +54,19 @@ module.exports = function (app) {
           // last show stockData in res.send
           //res.send(json.data.quote);
           //console.log(json);
-          
+          MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
+            let dbo = db.db("fcc-cert6-project4");
+            let collection = dbo.collection('stocks');
+            collection.findOne({stock: firstStock}, function(err, doc) {
+              if (err) {res.send(err)} else {res.send(doc)};
+              
+            })
+            
+          });
+            
+            
+            
+            
         }).catch(error => {
           console.log(error);
         });
