@@ -64,12 +64,91 @@ module.exports = function (app) {
               let dbo = db.db("fcc-cert6-project4");
               let collection = dbo.collection('stocks');
               collection.findOne({stock: firstStock}, function(err, doc) {
+                
                 if (doc) {
                   // and if like query === true and ip not already in ips on stock in db 
                   // then add ip and increment likes to stock in db
+                  if (like === true) {
+                    collection.findOne({stock: firstStock}, function(err, doc) {
+                      if (!doc.ips.includes(ip)) { // ip is not in stock array for likes so add it
+
+                        collection.findOneAndUpdate(
+                          { stock: firstStock },
+                          { $inc: { likes: 1 } },
+                          function(err, doc) {
+                            collection.findOne({stock: firstStock}, function(err, doc) {
+                              stockData = {
+                                stock: doc.stock,
+                                price: price,
+                                likes: doc.likes
+                              };
+                              res.send(stockData);
+                            });
+                        });
+
+                      } else { // ip is already in stock array for likes
+                        collection.findOne({stock: firstStock}, function(err, doc) {
+                          stockData = {
+                            stock: doc.stock,
+                            price: price,
+                            likes: doc.likes
+                          };
+                          res.send(stockData);
+                        });
+                      }
+
+                    });
+
+                  } else { // no like in query but stock exists in db
+                    collection.findOne({stock: firstStock}, function(err, doc) {
+                      stockData = {
+                        stock: doc.stock,
+                        price: price,
+                        likes: doc.likes
+                      };
+                      res.send(stockData);
+                    });
+                  }
+
+                } else { // no doc returned from db so not stock there
+
+                  storedData.stock = firstStock;
+                  if (like === true) storedData.likes = 1;
 
                   // add doc returned to stockDataArray
-                } else {
+                  collection.insertOne(storedData, function(err, doc) {
+
+                    collection.findOne({stock: firstStock}, function(err, doc) {
+                      stockData = {
+                        stock: doc.stock,
+                        price: price,
+                        likes: doc.likes
+                      };
+                      res.send(stockData);
+                    });
+
+                  });
+
+                }
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                /*
+                if (doc) { // if firstStock exists in db
+                  // and if like query === true and ip not already in ips on stock in db 
+                  // then add ip and increment likes to stock in db
+
+                } else { // firstStock does not exist in db
 
                   // create stock in stock db
                   storedData.stock = firstStock;
@@ -87,6 +166,7 @@ module.exports = function (app) {
                     //console.log(doc);
                   });
                 }
+                */
                 /*
                 collection.findOne({stock: secondStock}, function(err, doc) {
                   if (doc) {
@@ -138,9 +218,8 @@ module.exports = function (app) {
                 // then add ip and increment likes to stock in db
                 if (like === true) {
                   collection.findOne({stock: firstStock}, function(err, doc) {
-                    if (!doc.ips.includes(ip)) {
-                      console.log(doc.ips);
-                      console.log(ip);
+                    if (!doc.ips.includes(ip)) { // ip is not in stock array for likes so add it
+                      
                       collection.findOneAndUpdate(
                         { stock: firstStock },
                         { $inc: { likes: 1 } },
