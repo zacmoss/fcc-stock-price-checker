@@ -122,6 +122,7 @@ module.exports = function (app) {
           
           
           let ip = req.headers['x-forwarded-for'];
+          let ipAr
           storedData.ips.push(ip);
           
           MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
@@ -131,19 +132,38 @@ module.exports = function (app) {
               if (doc) {
                 // and if like query === true and ip not already in ips on stock in db 
                 // then add ip and increment likes to stock in db
+                if (like === true) {
+                  collection.findOne({stock: firstStock}, function(err, doc) {
+                    if (!doc.ips.includes(ip)) {
+                      console.log(doc.ips);
+                      console.log(ip);
+                      collection.findOneAndUpdate(
+                        { stock: firstStock },
+                        { $inc: { likes: 1 } },
+                        function(err, doc) {
+                          collection.findOne({stock: firstStock}, function(err, doc) {
+                            stockData = doc;
+                            res.send(stockData);
+                          });
+                      });
+                    
+                    } else { // ip is already in stock array for likes
+                      collection.findOne({stock: firstStock}, function(err, doc) {
+                        stockData = doc;
+                        res.send(stockData);
+                      });
+                    }
+                    
+                  });
+                  
+                } else { // no like in query
+                  collection.findOne({stock: firstStock}, function(err, doc) {
+                    stockData = doc;
+                    res.send(stockData);
+                  });
+                }
                 
-                collection.findOneAndUpdate(
-                  { stock: firstStock },
-                  { $inc: { likes: 1 } },
-                  function(err, doc) {
-                    collection.findOne({stock: firstStock}, function(err, doc) {
-                      stockData = doc;
-                      res.send(doc);
-                    });
-                });
-                
-                // add doc returned to stockDataArray
-              } else {
+              } else { // no stock in db
                 
                 storedData.stock = firstStock;
                 if (like === true) storedData.likes = 1;
@@ -153,7 +173,6 @@ module.exports = function (app) {
                   
                   collection.findOne({stock: firstStock}, function(err, doc) {
                     stockData = doc;
-                    console.log(stockData);
                     res.send(stockData);
                   });
                   
