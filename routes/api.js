@@ -53,12 +53,16 @@ module.exports = function (app) {
           // next get that sent data from db and save to stockData
           // last show stockData in res.send
           //res.send(json.data.quote);
-          //console.log(json);
+          console.log(json.data.quote);
           MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
             let dbo = db.db("fcc-cert6-project4");
             let collection = dbo.collection('stocks');
             collection.findOne({stock: firstStock}, function(err, doc) {
-              if (err) {res.send(err)} else {res.send(doc)};
+              if (doc) {
+                // and if like query === true then add ip and increment likes to stock in db
+              } else {
+                // create stock in stock db
+              }
               
             })
             
