@@ -49,69 +49,69 @@ module.exports = function (app) {
     
       if (secondStock) {
         console.log('there is a second stock');
-        axios.get('https://api.iextrading.com/1.0/stock/aapl/batch?types=quote,news,chart&range=1m&last=1').then(json => {
-          // if like = true find stock in db if stock doesn't exist create it
-          // increment that db items likes if like is true
-          // next get that sent data from db and save to stockData
-          // last show stockData in res.send
-          //res.send(json.data.quote);
-          //console.log(json.data.quote);
-          
-          let ip = req.headers['x-forwarded-for'];
-          let ipArray = ip.split(',');
-          ip = ipArray[0];
-          storedData.ips.push(ip);
-          
-          MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
-            let dbo = db.db("fcc-cert6-project4");
-            let collection = dbo.collection('stocks');
-            collection.findOne({stock: firstStock}, function(err, doc) {
-              if (doc) {
-                // and if like query === true and ip not already in ips on stock in db 
-                // then add ip and increment likes to stock in db
-                
-                // add doc returned to stockDataArray
-              } else {
-                
-                // create stock in stock db
-                storedData.stock = firstStock;
-                if (like === true) storedData.likes = 1;
-                
-                // add doc returned to stockDataArray
-                collection.insertOne(storedData, function(err, doc) {
-                  
-                  collection.findOne({stock: firstStock}, function(err, doc) {
-                    stockDataArray.push(doc);
-                    console.log(stockDataArray);
-                  });
-                  
-                  //stockDataArray.push(doc);
-                  //console.log(doc);
-                });
-              }
-              /*
-              collection.findOne({stock: secondStock}, function(err, doc) {
+        axios.get('https://api.iextrading.com/1.0/stock/' + firstStock + '/batch?types=quote,news,chart&range=1m&last=1').then(firstJson => {
+          axios.get('https://api.iextrading.com/1.0/stock/' + secondStock + '/batch?types=quote,news,chart&range=1m&last=1').then(secondJson => {
+
+
+            let firstPrice = firstJson.data.quote.latestPrice;
+            let secondPrice = secondJson.data.quote.latestPrice;
+            let ip = req.headers['x-forwarded-for'];
+            let ipArray = ip.split(',');
+            ip = ipArray[0];
+            storedData.ips.push(ip);
+
+            MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
+              let dbo = db.db("fcc-cert6-project4");
+              let collection = dbo.collection('stocks');
+              collection.findOne({stock: firstStock}, function(err, doc) {
                 if (doc) {
-                  // and if like query === true then add ip and increment likes to stock in db
+                  // and if like query === true and ip not already in ips on stock in db 
+                  // then add ip and increment likes to stock in db
+
                   // add doc returned to stockDataArray
-                  //res.send(stockDataArray);
                 } else {
+
                   // create stock in stock db
+                  storedData.stock = firstStock;
+                  if (like === true) storedData.likes = 1;
+
                   // add doc returned to stockDataArray
-                  //res.send(stockDataArray);
+                  collection.insertOne(storedData, function(err, doc) {
+
+                    collection.findOne({stock: firstStock}, function(err, doc) {
+                      stockDataArray.push(doc);
+                      console.log(stockDataArray);
+                    });
+
+                    //stockDataArray.push(doc);
+                    //console.log(doc);
+                  });
                 }
-                
+                /*
+                collection.findOne({stock: secondStock}, function(err, doc) {
+                  if (doc) {
+                    // and if like query === true then add ip and increment likes to stock in db
+                    // add doc returned to stockDataArray
+                    //res.send(stockDataArray);
+                  } else {
+                    // create stock in stock db
+                    // add doc returned to stockDataArray
+                    //res.send(stockDataArray);
+                  }
+
+                });
+                */
               });
-              */
+
+
+
             });
             
             
             
+          }).catch(error => {
+            console.log(error);
           });
-            
-            
-            
-            
         }).catch(error => {
           console.log(error);
         });
@@ -122,7 +122,8 @@ module.exports = function (app) {
           // next get that sent data from db and save to stockData
           // last show stockData
           
-          console.log(json.data.quote.latestPrice);
+          //console.log(json.data.quote.latestPrice);
+          let price = json.data.quote.latestPrice;
           let ip = req.headers['x-forwarded-for'];
           let ipArray = ip.split(',');
           ip = ipArray[0];
@@ -147,7 +148,7 @@ module.exports = function (app) {
                           collection.findOne({stock: firstStock}, function(err, doc) {
                             stockData = {
                               stock: doc.stock,
-                              price: 0,
+                              price: price,
                               likes: doc.likes
                             };
                             res.send(stockData);
@@ -158,7 +159,7 @@ module.exports = function (app) {
                       collection.findOne({stock: firstStock}, function(err, doc) {
                         stockData = {
                           stock: doc.stock,
-                          price: 0,
+                          price: price,
                           likes: doc.likes
                         };
                         res.send(stockData);
@@ -171,7 +172,7 @@ module.exports = function (app) {
                   collection.findOne({stock: firstStock}, function(err, doc) {
                     stockData = {
                       stock: doc.stock,
-                      price: 0,
+                      price: price,
                       likes: doc.likes
                     };
                     res.send(stockData);
@@ -189,7 +190,7 @@ module.exports = function (app) {
                   collection.findOne({stock: firstStock}, function(err, doc) {
                     stockData = {
                       stock: doc.stock,
-                      price: 0,
+                      price: price,
                       likes: doc.likes
                     };
                     res.send(stockData);
