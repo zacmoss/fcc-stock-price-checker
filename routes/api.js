@@ -36,6 +36,7 @@ module.exports = function (app) {
         }
       }
       let storedData = {
+        stock: '',
         ip: 'test ip',
         likes: 0
       };
@@ -45,6 +46,7 @@ module.exports = function (app) {
       console.log(like);
       // companyName   symbol
     
+    
       if (secondStock) {
         console.log('there is a second stock');
         axios.get('https://api.iextrading.com/1.0/stock/aapl/batch?types=quote,news,chart&range=1m&last=1').then(json => {
@@ -53,7 +55,10 @@ module.exports = function (app) {
           // next get that sent data from db and save to stockData
           // last show stockData in res.send
           //res.send(json.data.quote);
-          console.log(json.data.quote);
+          //console.log(json.data.quote);
+          
+          storedData.ip = req.headers['x-forwarded-for'];
+          
           MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
             let dbo = db.db("fcc-cert6-project4");
             let collection = dbo.collection('stocks');
@@ -63,7 +68,11 @@ module.exports = function (app) {
                 // add doc returned to stockDataArray
               } else {
                 // create stock in stock db
+                storedData.stock = firstStock;
+                if (like === true) storedData.likes = 1;
                 // add doc returned to stockDataArray
+                
+                //storedData.ip = "a new ip";
                 collection.insertOne(storedData, function(err, doc) {
                   console.log('data sent');
                   console.log(doc);
@@ -100,6 +109,10 @@ module.exports = function (app) {
           // first get storedData and send to db
           // next get that sent data from db and save to stockData
           // last show stockData
+          storedData.ip = req.headers['x-forwarded-for'];
+          
+          
+          
           res.send(json.data.quote);
           console.log(json);
         }).catch(error => {
