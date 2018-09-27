@@ -79,7 +79,8 @@ module.exports = function (app) {
                 collection.insertOne(storedData, function(err, doc) {
                   
                   collection.findOne({stock: firstStock}, function(err, doc) {
-                    //res.send(doc);
+                    stockDataArray.push(doc);
+                    console.log(stockDataArray);
                   });
                   
                   //stockDataArray.push(doc);
@@ -91,16 +92,17 @@ module.exports = function (app) {
                 if (doc) {
                   // and if like query === true then add ip and increment likes to stock in db
                   // add doc returned to stockDataArray
+                  //res.send(stockDataArray);
                 } else {
                   // create stock in stock db
                   // add doc returned to stockDataArray
+                  //res.send(stockDataArray);
                 }
                 
               });
               */
             });
             
-            res.send(stockDataArray);
             
             
           });
@@ -117,14 +119,56 @@ module.exports = function (app) {
           // first get storedData and send to db
           // next get that sent data from db and save to stockData
           // last show stockData
-          storedData.ip = req.headers['x-forwarded-for'];
+          
+          
+          let ip = req.headers['x-forwarded-for'];
+          storedData.ips.push(ip);
+          
+          MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
+            let dbo = db.db("fcc-cert6-project4");
+            let collection = dbo.collection('stocks');
+            collection.findOne({stock: firstStock}, function(err, doc) {
+              if (doc) {
+                // and if like query === true and ip not already in ips on stock in db 
+                // then add ip and increment likes to stock in db
+                
+                collection.findOneAndUpdate(
+                  { stock: firstStock },
+                  { $inc: { likes: 1 } },
+                  function(err, doc) {
+                    collection.findOne({stock: firstStock}, function(err, doc) {
+                      stockData = doc;
+                      res.send(doc);
+                    });
+                });
+                
+                // add doc returned to stockDataArray
+              } else {
+                
+                storedData.stock = firstStock;
+                if (like === true) storedData.likes = 1;
+                
+                // add doc returned to stockDataArray
+                collection.insertOne(storedData, function(err, doc) {
+                  
+                  collection.findOne({stock: firstStock}, function(err, doc) {
+                    stockData = doc;
+                    console.log(stockData);
+                    res.send(stockData);
+                  });
+                  
+                });
+                
+              }
+            })
+          })
           
           
           
-          res.send(json.data.quote);
-          console.log(json);
+          //res.send(json.data.quote);
+          //console.log(json);
         }).catch(error => {
-          console.log(error);
+          //console.log(error);
         });
       }
     
