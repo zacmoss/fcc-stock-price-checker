@@ -19,21 +19,18 @@ module.exports = function (app) {
   app.route('/api/stock-prices')
     .get(function (req, res){
       let stock = req.query.stock;
-    /*
-      app.get('https://finance.google.com/finance/info?q=NASDAQ%3a' + stock, function(req, res) {
-        console.log(req);
-        console.log(res);
-      });
-      */
-    // + '&output=json'
-    /*
-    axios.get(' https://finance.google.com/finance?q=NASDAQ:' + stock).then(json => {
-      res.send(json.data);
-      console.log(json);
-    }).catch(error => {
-      console.log(error);
-    });
-    */
+      if (req.query.like) {
+        console.log('like');
+      }
+      let storedData = {
+        ticker: '',
+        price: '',
+        likes: 0
+      };
+      
+      let stockData = {};
+    
+    // companyName   symbol    
     axios.get('https://api.iextrading.com/1.0/stock/aapl/batch?types=quote,news,chart&range=1m&last=1').then(json => {
       res.send(json.data.quote);
       console.log(json);
