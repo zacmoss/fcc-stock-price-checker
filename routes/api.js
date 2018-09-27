@@ -34,9 +34,12 @@ module.exports = function (app) {
       console.log(error);
     });
     */
-    axios.get('https://api.iextrading.com/1.0').then(json => {
+    axios.get('https://api.iextrading.com/1.0/stock/aapl/batch?types=quote,news,chart&range=1m&last=1').then(json => {
+      res.send(json.data.quote);
       console.log(json);
-    }).catch(error => 
+    }).catch(error => {
+      console.log(error);
+    });
     });
     
 };
