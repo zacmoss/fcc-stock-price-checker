@@ -83,23 +83,31 @@ module.exports = function (app) {
                         if (!firstDoc.ips.includes(ip) && !secondDoc.ips.includes(ip)) { // ip is not in stock array for likes so add it
                           collection.findOneAndUpdate({ stock: firstStock }, { $inc: { likes: 1 } }, function(err, doc) {
                             collection.findOneAndUpdate({ stock: secondStock }, { $inc: { likes: 1 } }, function(err, doc) {
-                              collection.findOne({stock: firstStock}, function(err, doc) {
-                                collection.findOne({stock: secondStock}, function(err, doc) {
-                                //stockData = { stock: doc.stock, price: price, likes: doc.likes };
-                                //res.send(stockData);
+                              collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                                collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                                  let firstStockData = { stock: firstStockDoc, price: firstPrice, likes: firstStockDoc.likes};
+                                  let secondStockData = { stock: secondStockDoc, price: secondPrice, likes: secondStockDoc.likes};
+                                  stockDataArray.push(firstStockData);
+                                  stockDataArray.push(secondStockData);
+                                  console.log(stockDataArray);
+                                  res.send(stockDataArray);
+                                  
+                                  //stockData = { stock: doc.stock, price: price, likes: doc.likes };
+                                  //res.send(stockData);
+                                });
                               });
                             });
                           });
                         } else { // ip is already in stock array for likes
                           collection.findOne({stock: firstStock}, function(err, doc) {
-                            stockData = { stock: doc.stock, price: price, likes: doc.likes };
+                            //stockData = { stock: doc.stock, price: price, likes: doc.likes };
                             res.send(stockData);
                           });
                         }
                       });
                     } else { // no like in query but stock exists in db
                       collection.findOne({stock: firstStock}, function(err, doc) {
-                        stockData = { stock: doc.stock, price: price, likes: doc.likes };
+                        //stockData = { stock: doc.stock, price: price, likes: doc.likes };
                         res.send(stockData);
                       });
                     }
@@ -121,7 +129,7 @@ module.exports = function (app) {
                     collection.insertOne(storedData, function(err, doc) {
 
                       collection.findOne({stock: firstStock}, function(err, doc) {
-                        stockData = { stock: doc.stock, price: price, likes: doc.likes };
+                        //stockData = { stock: doc.stock, price: price, likes: doc.likes };
                         res.send(stockData);
                       });
 
