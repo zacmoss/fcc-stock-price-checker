@@ -40,6 +40,16 @@ module.exports = function (app) {
         ips: ['test ip'],
         likes: 0
       };
+      let firstStoredData = {
+        stock: '',
+        ips: ['test ip'],
+        likes: 0
+      };
+      let secondStoredData = {
+        stock: '',
+        ips: ['test ip'],
+        likes: 0
+      };
       
       let stockData = {}; // if there is only one stock
       let stockDataArray = []; // if there are two stocks compared
@@ -63,12 +73,15 @@ module.exports = function (app) {
             MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
               let dbo = db.db("fcc-cert6-project4");
               let collection = dbo.collection('stocks');
-              collection.findOne({stock: firstStock}, function(err, doc) {
+              collection.findOne({stock: firstStock}, function(err, firstDoc) {
+                collection.findOne({stock: secondStock}, function(err, secondDoc) {
                 
-                if (doc) {
+                if (firstDoc) {
                   // and if like query === true and ip not already in ips on stock in db 
                   // then add ip and increment likes to stock in db
-                  if (like === true) {
+                  
+                  
+                  if (like === true) { // like in query so add ips to stock ips and show rel like on return
                     collection.findOne({stock: firstStock}, function(err, doc) {
                       if (!doc.ips.includes(ip)) { // ip is not in stock array for likes so add it
 
@@ -110,10 +123,15 @@ module.exports = function (app) {
                     });
                   }
 
-                } else { // no doc returned from db so not stock there
+                } else { // no doc returned from db so not stock there for firstStock
+                  
+                  // check if doc returned from db for secondStock
+                  
+                  
 
-                  storedData.stock = firstStock;
-                  if (like === true) storedData.likes = 1;
+                  firstStoredData.stock = firstStock;
+                  if (like === true) firstStoredData.likes = 1;
+                  firstStoredData.price = firstPrice;
 
                   // add doc returned to stockDataArray
                   collection.insertOne(storedData, function(err, doc) {
@@ -130,6 +148,9 @@ module.exports = function (app) {
                   });
 
                 }
+                
+                
+                
                 
                 
                 
@@ -181,6 +202,7 @@ module.exports = function (app) {
 
                 });
                 */
+                });
               });
 
 
