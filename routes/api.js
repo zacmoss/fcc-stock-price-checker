@@ -61,7 +61,12 @@ module.exports = function (app) {
 
             let firstPrice = firstJson.data.quote.latestPrice;
             let secondPrice = secondJson.data.quote.latestPrice;
-            let ip = req.headers['x-forwarded-for'];
+            let ip;
+            if (req.headers['x-forwarded-for']) {
+              ip = req.headers['x-forwarded-for'];
+            } else {
+              ip = 'test ip';
+            }
             let ipArray = ip.split(',');
             ip = ipArray[0];
             //storedData.ips.push(ip);
