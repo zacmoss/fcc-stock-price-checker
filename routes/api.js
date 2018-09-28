@@ -315,7 +315,12 @@ module.exports = function (app) {
         axios.get('https://api.iextrading.com/1.0/stock/' + firstStock + '/batch?types=quote,news,chart&range=1m&last=1').then(json => {
         
           let price = json.data.quote.latestPrice;
-          let ip = req.headers['x-forwarded-for'];
+          let ip;
+          if (req.headers['x-forwarded-for']) {
+            ip = req.headers['x-forwarded-for'];
+          } else {
+            ip = 'test ip';
+          }
           let ipArray = ip.split(',');
           ip = ipArray[0];
           
@@ -341,6 +346,7 @@ module.exports = function (app) {
                   }
                 } else { // no like in query but stock exists in db
                   collection.findOne({stock: firstStock}, function(err, doc) {
+                    //console.log('got here');
                     stockData = { stock: doc.stock, price: price, likes: doc.likes };
                     res.send(stockData);
                   });

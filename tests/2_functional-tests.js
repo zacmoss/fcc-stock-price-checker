@@ -23,8 +23,7 @@ suite('Functional Tests', function() {
         .query({stock: 'goog'})
         .end(function(err, res){
           assert.equal(res.status, 200);
-          console.log(err);
-          console.log(res.status);
+          console.log(res.body);
           //complete this one too
           
           done();
