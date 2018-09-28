@@ -80,34 +80,36 @@ module.exports = function (app) {
                   if (secondDoc) { // firstStock in db, and secondStock exists in db
                     if (like === true) { // like in query so add ips to stock ips and show rel like on return
                       
+                      // WORKS but need to add rel_likes
                       // this findOne is maybe redundant
-                      collection.findOne({stock: firstStock}, function(err, doc) {
                         if (!firstDoc.ips.includes(ip) && !secondDoc.ips.includes(ip)) { // ip is not in stock array for likes so add it
-                          
                           collection.findOneAndUpdate({ stock: firstStock }, { $inc: { likes: 1 }, $addToSet: { ips: ip } }, function(err, doc) {
                             collection.findOneAndUpdate({ stock: secondStock }, { $inc: { likes: 1 }, $addToSet: { ips: ip }  }, function(err, doc) {
                               collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
                                 collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
                                   
                                   /////////////// change this to rel_likes
-                                  let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, likes: firstStockDoc.likes };
-                                  let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, likes: secondStockDoc.likes };
-                                  console.log('firstStockData');
-                                  console.log(firstStockData);
+                                  let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                                  let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                                  firstStockData.rel_likes = 
+                                  //let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, likes: firstStockDoc.likes };
+                                  //let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, likes: secondStockDoc.likes };
+                                  
                                   stockDataArray.push(firstStockData);
                                   stockDataArray.push(secondStockData);
-                                  console.log(stockDataArray);
                                   res.send(stockDataArray);
-                                  
-                                  //stockData = { stock: doc.stock, price: price, likes: doc.likes };
-                                  //res.send(stockData);
                                 });
                               });
                             });
                           });
-                        } else if (!firstDoc.ips.includes(ip)) {
-                          
-                        } else if (!secondDoc.ips.includes(ip)) {
+                        } else if (!firstDoc.ips.includes(ip)) { // only add ip and like to firstDoc
+                          collection.findOneAndUpdate({ stock: firstStock }, { $inc: { likes: 1 }, $addToSet: { ips: ip } }, function(err, doc) {
+                            collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                              collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                              });
+                            });  
+                          });
+                        } else if (!secondDoc.ips.includes(ip)) { // only add ip and like to secondDoc
                           
                         } else { // ip is already in stock array for likes
                           collection.findOne({stock: firstStock}, function(err, doc) {
@@ -115,7 +117,6 @@ module.exports = function (app) {
                             res.send(stockData);
                           });
                         }
-                      });
                     } else { // no like in query but stock exists in db
                       collection.findOne({stock: firstStock}, function(err, doc) {
                         //stockData = { stock: doc.stock, price: price, likes: doc.likes };
