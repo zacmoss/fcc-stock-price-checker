@@ -79,7 +79,8 @@ suite('Functional Tests', function() {
           assert.equal(res.body[1].stock, 'msft');
           assert.property(res.body[0], 'price', 'First stock should contain price');
           assert.property(res.body[1], 'price', 'Second stock should contain price');
-          assert.isAbove(res.body[0].likes, 0);
+          assert.property(res.body[0], 'rel_likes', 'First stock should contain rel_likes');
+          assert.property(res.body[1], 'rel_likes', 'Second stock should contain rel_likes');
           done();
         });
       });
