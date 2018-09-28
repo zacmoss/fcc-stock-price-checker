@@ -18,6 +18,7 @@ module.exports = function (app) {
 
   app.route('/api/stock-prices')
     .get(function (req, res){
+      //console.log(req.query.stock);
       let firstStock;
       let secondStock;
       let like;
@@ -312,7 +313,7 @@ module.exports = function (app) {
       } else {
         console.log('there is only one stock');
         axios.get('https://api.iextrading.com/1.0/stock/' + firstStock + '/batch?types=quote,news,chart&range=1m&last=1').then(json => {
-
+        
           let price = json.data.quote.latestPrice;
           let ip = req.headers['x-forwarded-for'];
           let ipArray = ip.split(',');

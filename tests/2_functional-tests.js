@@ -19,8 +19,8 @@ suite('Functional Tests', function() {
       
       test('1 stock', function(done) {
        chai.request(server)
-        .get('/api/stock-prices?stock=goog')
-        //.query({stock: 'goog'})
+        .get('/api/stock-prices')
+        .query({stock: 'goog'})
         .end(function(err, res){
           assert.equal(res.status, 200);
           console.log(err);
