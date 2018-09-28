@@ -22,11 +22,9 @@ module.exports = function (app) {
       let secondStock;
       let like;
       if (req.query.stock.length === 2) {
-        //console.log('there is an array of stock queries');
         firstStock = req.query.stock[0];
         secondStock = req.query.stock[1];
       } else {
-        //console.log('there is only one stock query');
         firstStock = req.query.stock;
       }
       
@@ -53,8 +51,12 @@ module.exports = function (app) {
       
       let stockData = {}; // if there is only one stock
       let stockDataArray = []; // if there are two stocks compared
-      console.log(like);
-      // companyName   symbol
+
+    // companyName   symbol
+    
+      let relLikeFunc = function(a, b) {
+      
+      }
     
     
       if (secondStock) {
@@ -91,7 +93,6 @@ module.exports = function (app) {
                                   /////////////// change this to rel_likes
                                   let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
                                   let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
-                                  firstStockData.rel_likes = 
                                   //let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, likes: firstStockDoc.likes };
                                   //let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, likes: secondStockDoc.likes };
                                   
