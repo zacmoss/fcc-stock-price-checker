@@ -68,7 +68,7 @@ module.exports = function (app) {
             let ip = req.headers['x-forwarded-for'];
             let ipArray = ip.split(',');
             ip = ipArray[0];
-            storedData.ips.push(ip);
+            //storedData.ips.push(ip);
 
             MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
               let dbo = db.db("fcc-cert6-project4");
@@ -79,14 +79,17 @@ module.exports = function (app) {
                 if (firstDoc) {
                   if (secondDoc) { // firstStock in db, and secondStock exists in db
                     if (like === true) { // like in query so add ips to stock ips and show rel like on return
+                      
                       collection.findOne({stock: firstStock}, function(err, doc) {
                         if (!firstDoc.ips.includes(ip) && !secondDoc.ips.includes(ip)) { // ip is not in stock array for likes so add it
                           collection.findOneAndUpdate({ stock: firstStock }, { $inc: { likes: 1 } }, function(err, doc) {
                             collection.findOneAndUpdate({ stock: secondStock }, { $inc: { likes: 1 } }, function(err, doc) {
                               collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
                                 collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
-                                  let firstStockData = { stock: firstStockDoc, price: firstPrice, likes: firstStockDoc.likes};
-                                  let secondStockData = { stock: secondStockDoc, price: secondPrice, likes: secondStockDoc.likes};
+                                  let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, likes: firstStockDoc.likes };
+                                  let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, likes: secondStockDoc.likes };
+                                  console.log('firstStockData');
+                                  console.log(firstStockData);
                                   stockDataArray.push(firstStockData);
                                   stockDataArray.push(secondStockData);
                                   console.log(stockDataArray);
@@ -220,7 +223,7 @@ module.exports = function (app) {
           let ip = req.headers['x-forwarded-for'];
           let ipArray = ip.split(',');
           ip = ipArray[0];
-          storedData.ips.push(ip);
+          
           
           MongoClient.connect(CONNECTION_STRING, { useNewUrlParser: true }, function(err, db) {
             let dbo = db.db("fcc-cert6-project4");
@@ -232,7 +235,7 @@ module.exports = function (app) {
                 if (like === true) {
                   collection.findOne({stock: firstStock}, function(err, doc) {
                     if (!doc.ips.includes(ip)) { // ip is not in stock array for likes so add it
-                      
+                      storedData.ips.push(ip);
                       collection.findOneAndUpdate(
                         { stock: firstStock },
                         { $inc: { likes: 1 } },
