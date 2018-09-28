@@ -82,6 +82,11 @@ module.exports = function (app) {
                       
                       collection.findOne({stock: firstStock}, function(err, doc) {
                         if (!firstDoc.ips.includes(ip) && !secondDoc.ips.includes(ip)) { // ip is not in stock array for likes so add it
+                          //firstStoredData.ips.push(ip);
+                          //secondStoredData.ips.push(ip);
+                          // maybe need to addToSet in update
+                          // also inc likes for both
+                          // docs already exist so no need to add their stock name
                           collection.findOneAndUpdate({ stock: firstStock }, { $inc: { likes: 1 } }, function(err, doc) {
                             collection.findOneAndUpdate({ stock: secondStock }, { $inc: { likes: 1 } }, function(err, doc) {
                               collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
@@ -101,6 +106,10 @@ module.exports = function (app) {
                               });
                             });
                           });
+                        } else if (!firstDoc.ips.includes(ip)) {
+                          
+                        } else if (!secondDoc.ips.includes(ip)) {
+                          
                         } else { // ip is already in stock array for likes
                           collection.findOne({stock: firstStock}, function(err, doc) {
                             //stockData = { stock: doc.stock, price: price, likes: doc.likes };
@@ -277,7 +286,10 @@ module.exports = function (app) {
               } else { // no stock in db
                 
                 storedData.stock = firstStock;
-                if (like === true) storedData.likes = 1;
+                if (like === true) {
+                  storedData.likes = 1;
+                  storedData.ips.push(ip);
+                }
                 
                 // add doc returned to stockDataArray
                 collection.insertOne(storedData, function(err, doc) {
