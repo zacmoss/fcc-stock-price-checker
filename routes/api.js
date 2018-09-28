@@ -77,75 +77,58 @@ module.exports = function (app) {
                 collection.findOne({stock: secondStock}, function(err, secondDoc) {
                 
                 if (firstDoc) {
-                  // and if like query === true and ip not already in ips on stock in db 
-                  // then add ip and increment likes to stock in db
-                  
-                  
-                  if (like === true) { // like in query so add ips to stock ips and show rel like on return
-                    collection.findOne({stock: firstStock}, function(err, doc) {
-                      if (!doc.ips.includes(ip)) { // ip is not in stock array for likes so add it
-
-                        collection.findOneAndUpdate(
-                          { stock: firstStock },
-                          { $inc: { likes: 1 } },
-                          function(err, doc) {
-                            collection.findOne({stock: firstStock}, function(err, doc) {
-                              stockData = {
-                                stock: doc.stock,
-                                price: price,
-                                likes: doc.likes
-                              };
-                              res.send(stockData);
+                  if (secondDoc) { // firstStock in db, and secondStock exists in db
+                    if (like === true) { // like in query so add ips to stock ips and show rel like on return
+                      collection.findOne({stock: firstStock}, function(err, doc) {
+                        if (!firstDoc.ips.includes(ip) && !secondDoc.ips.includes(ip)) { // ip is not in stock array for likes so add it
+                          collection.findOneAndUpdate({ stock: firstStock }, { $inc: { likes: 1 } }, function(err, doc) {
+                            collection.findOneAndUpdate({ stock: secondStock }, { $inc: { likes: 1 } }, function(err, doc) {
+                              collection.findOne({stock: firstStock}, function(err, doc) {
+                                collection.findOne({stock: secondStock}, function(err, doc) {
+                                //stockData = { stock: doc.stock, price: price, likes: doc.likes };
+                                //res.send(stockData);
+                              });
                             });
-                        });
-
-                      } else { // ip is already in stock array for likes
-                        collection.findOne({stock: firstStock}, function(err, doc) {
-                          stockData = {
-                            stock: doc.stock,
-                            price: price,
-                            likes: doc.likes
-                          };
-                          res.send(stockData);
-                        });
-                      }
-
-                    });
-
-                  } else { // no like in query but stock exists in db
-                    collection.findOne({stock: firstStock}, function(err, doc) {
-                      stockData = {
-                        stock: doc.stock,
-                        price: price,
-                        likes: doc.likes
-                      };
-                      res.send(stockData);
-                    });
+                          });
+                        } else { // ip is already in stock array for likes
+                          collection.findOne({stock: firstStock}, function(err, doc) {
+                            stockData = { stock: doc.stock, price: price, likes: doc.likes };
+                            res.send(stockData);
+                          });
+                        }
+                      });
+                    } else { // no like in query but stock exists in db
+                      collection.findOne({stock: firstStock}, function(err, doc) {
+                        stockData = { stock: doc.stock, price: price, likes: doc.likes };
+                        res.send(stockData);
+                      });
+                    }
+                  } else { // firstStock in db, but secondStock not in db
+                    
                   }
 
                 } else { // no doc returned from db so not stock there for firstStock
                   
-                  // check if doc returned from db for secondStock
+                  // check if secondDoc returned from db for secondStock
+                  if (secondDoc) { // no firstStock in db, but secondStock in db
                   
-                  
 
-                  firstStoredData.stock = firstStock;
-                  if (like === true) firstStoredData.likes = 1;
-                  firstStoredData.price = firstPrice;
+                    firstStoredData.stock = firstStock;
+                    if (like === true) firstStoredData.likes = 1;
+                    firstStoredData.price = firstPrice;
 
-                  // add doc returned to stockDataArray
-                  collection.insertOne(storedData, function(err, doc) {
+                    // add doc returned to stockDataArray
+                    collection.insertOne(storedData, function(err, doc) {
 
-                    collection.findOne({stock: firstStock}, function(err, doc) {
-                      stockData = {
-                        stock: doc.stock,
-                        price: price,
-                        likes: doc.likes
-                      };
-                      res.send(stockData);
+                      collection.findOne({stock: firstStock}, function(err, doc) {
+                        stockData = { stock: doc.stock, price: price, likes: doc.likes };
+                        res.send(stockData);
+                      });
+
                     });
-
-                  });
+                  } else { // no firstStock and no secondStock in db
+                    
+                  }
 
                 }
                 
