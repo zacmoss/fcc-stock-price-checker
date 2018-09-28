@@ -80,17 +80,16 @@ module.exports = function (app) {
                   if (secondDoc) { // firstStock in db, and secondStock exists in db
                     if (like === true) { // like in query so add ips to stock ips and show rel like on return
                       
+                      // this findOne is maybe redundant
                       collection.findOne({stock: firstStock}, function(err, doc) {
                         if (!firstDoc.ips.includes(ip) && !secondDoc.ips.includes(ip)) { // ip is not in stock array for likes so add it
-                          //firstStoredData.ips.push(ip);
-                          //secondStoredData.ips.push(ip);
-                          // maybe need to addToSet in update
-                          // also inc likes for both
-                          // docs already exist so no need to add their stock name
-                          collection.findOneAndUpdate({ stock: firstStock }, { $inc: { likes: 1 } }, function(err, doc) {
-                            collection.findOneAndUpdate({ stock: secondStock }, { $inc: { likes: 1 } }, function(err, doc) {
+                          
+                          collection.findOneAndUpdate({ stock: firstStock }, { $inc: { likes: 1 }, $addToSet: { ips: ip } }, function(err, doc) {
+                            collection.findOneAndUpdate({ stock: secondStock }, { $inc: { likes: 1 }, $addToSet: { ips: ip }  }, function(err, doc) {
                               collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
                                 collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                                  
+                                  /////////////// change this to rel_likes
                                   let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, likes: firstStockDoc.likes };
                                   let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, likes: secondStockDoc.likes };
                                   console.log('firstStockData');
