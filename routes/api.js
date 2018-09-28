@@ -52,9 +52,6 @@ module.exports = function (app) {
       let stockData = {}; // if there is only one stock
       let stockDataArray = []; // if there are two stocks compared
 
-      // companyName   symbol
-    
-    
       if (secondStock) {
         console.log('there is a second stock');
         axios.get('https://api.iextrading.com/1.0/stock/' + firstStock + '/batch?types=quote,news,chart&range=1m&last=1').then(firstJson => {
