@@ -192,31 +192,54 @@ module.exports = function (app) {
                           });
                         });
                       }
-                    } else { // like not in query
-                      
+                    } else { // like not in query // create second stock in db and show both
+                      collection.insertOne(storedData, function(err, doc) {
+                        collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                          collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                            let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                            let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                            firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                            secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                            stockDataArray.push(firstStockData);
+                            stockDataArray.push(secondStockData);
+                            res.send(stockDataArray);
+                          });
+                        });
+                      });
                     }
                   }
-                } else { // no doc returned from db so not stock there for firstStock
+                } else { // no doc returned from db so no stock there for firstStock
                   
-                  // check if secondDoc returned from db for secondStock
                   if (secondDoc) { // no firstStock in db, but secondStock in db
-                  
-
-                    firstStoredData.stock = firstStock;
-                    if (like === true) firstStoredData.likes = 1;
-                    firstStoredData.price = firstPrice;
-
-                    // add doc returned to stockDataArray
-                    collection.insertOne(storedData, function(err, doc) {
-
-                      collection.findOne({stock: firstStock}, function(err, doc) {
-                        //stockData = { stock: doc.stock, price: price, likes: doc.likes };
-                        res.send(stockData);
-                      });
-
-                    });
+                    if (like === true) { // like in query // create firstStock in db
+                      if (!secondDoc.ips.includes(ip)) { // secondStock doesn't have ip in likes
+                        collection.findOneAndUpdate({ stock: secondStock }, { $inc: { likes: 1 }, $addToSet: { ips: ip } }, function(err, doc) {
+                          collection.insertOne(storedData, function(err, doc) {
+                            collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                              collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                                let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                                let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                                firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                                secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                                stockDataArray.push(firstStockData);
+                                stockDataArray.push(secondStockData);
+                                res.send(stockDataArray);
+                              });
+                            });
+                          });
+                        });
+                      } else { // secondStock already has ip in likes
+                        
+                      }
+                    } else { // no like in query // create firstStock in db
+                      
+                    }
                   } else { // no firstStock and no secondStock in db
-                    
+                    if (like === true) { // like in query // create both stocks add like and ip
+                      
+                    } else { // no like in query // create both stocks in db
+                      
+                    }
                   }
 
                 }
