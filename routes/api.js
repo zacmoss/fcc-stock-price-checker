@@ -52,11 +52,7 @@ module.exports = function (app) {
       let stockData = {}; // if there is only one stock
       let stockDataArray = []; // if there are two stocks compared
 
-    // companyName   symbol
-    
-      let relLikeFunc = function(a, b) {
-      
-      }
+      // companyName   symbol
     
     
       if (secondStock) {
@@ -93,9 +89,10 @@ module.exports = function (app) {
                                   /////////////// change this to rel_likes
                                   let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
                                   let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                                  firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                                  secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
                                   //let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, likes: firstStockDoc.likes };
                                   //let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, likes: secondStockDoc.likes };
-                                  
                                   stockDataArray.push(firstStockData);
                                   stockDataArray.push(secondStockData);
                                   res.send(stockDataArray);
@@ -107,27 +104,98 @@ module.exports = function (app) {
                           collection.findOneAndUpdate({ stock: firstStock }, { $inc: { likes: 1 }, $addToSet: { ips: ip } }, function(err, doc) {
                             collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
                               collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                                let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                                let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                                firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                                secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                                stockDataArray.push(firstStockData);
+                                stockDataArray.push(secondStockData);
+                                res.send(stockDataArray);
                               });
                             });  
                           });
                         } else if (!secondDoc.ips.includes(ip)) { // only add ip and like to secondDoc
-                          
+                          collection.findOneAndUpdate({ stock: secondStock }, { $inc: { likes: 1 }, $addToSet: { ips: ip } }, function(err, doc) {
+                            collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                              collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                                let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                                let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                                firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                                secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                                stockDataArray.push(firstStockData);
+                                stockDataArray.push(secondStockData);
+                                res.send(stockDataArray);
+                              });
+                            });  
+                          });
                         } else { // ip is already in stock array for likes
-                          collection.findOne({stock: firstStock}, function(err, doc) {
-                            //stockData = { stock: doc.stock, price: price, likes: doc.likes };
-                            res.send(stockData);
+                          collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                            collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                              let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                              let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                              firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                              secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                              stockDataArray.push(firstStockData);
+                              stockDataArray.push(secondStockData);
+                              res.send(stockDataArray);
+                            });
                           });
                         }
-                    } else { // no like in query but stock exists in db
-                      collection.findOne({stock: firstStock}, function(err, doc) {
-                        //stockData = { stock: doc.stock, price: price, likes: doc.likes };
-                        res.send(stockData);
+                    } else { // no like in query but both stocks exist in db
+                      collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                        collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                          let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                          let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                          firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                          secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                          stockDataArray.push(firstStockData);
+                          stockDataArray.push(secondStockData);
+                          res.send(stockDataArray);
+                        });
                       });
                     }
                   } else { // firstStock in db, but secondStock not in db
                     
+                    storedData.stock = secondStock;
+                                        
+                    if (like === true) { // like in query
+                      storedData.likes = 1;
+                      storedData.ips.push(ip);
+                      if (!firstDoc.ips.includes(ip)) { // firstStock doesn't have ip in likes
+                        collection.findOneAndUpdate({ stock: firstStock }, { $inc: { likes: 1 }, $addToSet: { ips: ip } }, function(err, doc) {
+                          collection.insertOne(storedData, function(err, doc) {
+                            collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                              collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                                let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                                let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                                firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                                secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                                stockDataArray.push(firstStockData);
+                                stockDataArray.push(secondStockData);
+                                res.send(stockDataArray);
+                              });
+                            });
+                          });
+                        });
+                      } else { // firstStock already has ip in likes
+                        collection.insertOne(storedData, function(err, doc) {
+                          collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                            collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                              let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                              let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                              firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                              secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                              stockDataArray.push(firstStockData);
+                              stockDataArray.push(secondStockData);
+                              res.send(stockDataArray);
+                            });
+                          });
+                        });
+                      }
+                    } else { // like not in query
+                      
+                    }
                   }
-
                 } else { // no doc returned from db so not stock there for firstStock
                   
                   // check if secondDoc returned from db for secondStock
