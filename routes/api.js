@@ -211,7 +211,10 @@ module.exports = function (app) {
                 } else { // no doc returned from db so no stock there for firstStock
                   
                   if (secondDoc) { // no firstStock in db, but secondStock in db
+                    storedData.stock = firstStock;
                     if (like === true) { // like in query // create firstStock in db
+                      storedData.likes = 1;
+                      storedData.ips.push(ip);
                       if (!secondDoc.ips.includes(ip)) { // secondStock doesn't have ip in likes
                         collection.findOneAndUpdate({ stock: secondStock }, { $inc: { likes: 1 }, $addToSet: { ips: ip } }, function(err, doc) {
                           collection.insertOne(storedData, function(err, doc) {
@@ -228,17 +231,75 @@ module.exports = function (app) {
                             });
                           });
                         });
-                      } else { // secondStock already has ip in likes
-                        
+                      } else { // secondStock already has ip in likes // create firstStock
+                        collection.insertOne(storedData, function(err, doc) {
+                          collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                            collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                              let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                              let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                              firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                              secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                              stockDataArray.push(firstStockData);
+                              stockDataArray.push(secondStockData);
+                              res.send(stockDataArray);
+                            });
+                          });
+                        });
                       }
                     } else { // no like in query // create firstStock in db
-                      
+                      collection.insertOne(storedData, function(err, doc) {
+                        collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                          collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                            let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                            let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                            firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                            secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                            stockDataArray.push(firstStockData);
+                            stockDataArray.push(secondStockData);
+                            res.send(stockDataArray);
+                          });
+                        });
+                      });
                     }
                   } else { // no firstStock and no secondStock in db
+                    firstStoredData.stock = firstStock;
+                    secondStoredData.stock = secondStock;
                     if (like === true) { // like in query // create both stocks add like and ip
-                      
+                      firstStoredData.likes = 1;
+                      firstStoredData.ips.push(ip);
+                      secondStoredData.likes = 1;
+                      secondStoredData.ips.push(ip);
+                      collection.insertOne(firstStoredData, function(err, doc) {
+                        collection.insertOne(secondStoredData, function(err, doc) {
+                          collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                            collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                              let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                              let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                              firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                              secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                              stockDataArray.push(firstStockData);
+                              stockDataArray.push(secondStockData);
+                              res.send(stockDataArray);
+                            });
+                          });
+                        });
+                      });
                     } else { // no like in query // create both stocks in db
-                      
+                      collection.insertOne(firstStoredData, function(err, doc) {
+                        collection.insertOne(secondStoredData, function(err, doc) {
+                          collection.findOne({stock: firstStock}, function(err, firstStockDoc) {
+                            collection.findOne({stock: secondStock}, function(err, secondStockDoc) {
+                              let firstStockData = { stock: firstStockDoc.stock, price: firstPrice, rel_likes: 0 };
+                              let secondStockData = { stock: secondStockDoc.stock, price: secondPrice, rel_likes: 0};
+                              firstStockData.rel_likes = firstStockDoc.likes - secondStockDoc.likes;
+                              secondStockData.rel_likes = secondStockDoc.likes - firstStockDoc.likes;
+                              stockDataArray.push(firstStockData);
+                              stockDataArray.push(secondStockData);
+                              res.send(stockDataArray);
+                            });
+                          });
+                        });
+                      });
                     }
                   }
 
@@ -382,35 +443,19 @@ module.exports = function (app) {
                   storedData.likes = 1;
                   storedData.ips.push(ip);
                 }
-                
                 // add doc returned to stockDataArray
                 collection.insertOne(storedData, function(err, doc) {
-                  
                   collection.findOne({stock: firstStock}, function(err, doc) {
-                    stockData = {
-                      stock: doc.stock,
-                      price: price,
-                      likes: doc.likes
-                    };
+                    stockData = { stock: doc.stock, price: price, likes: doc.likes };
                     res.send(stockData);
                   });
-                  
                 });
-                
               }
             })
           })
-          
-          
-          
-          //res.send(json.data.quote);
-          //console.log(json);
         }).catch(error => {
           //console.log(error);
         });
       }
-    
-      
     });
-    
 };
